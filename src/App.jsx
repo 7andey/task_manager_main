@@ -53,24 +53,33 @@ const App = () => {
     setShowModal(true);
   };
 
-  // Filter + Sort tasks
   const sortedAndFilteredTasks = useMemo(() => {
     const priorityMap = { High: 1, Medium: 2, Low: 3 };
     let filtered = [...tasks];
 
+    // Apply filtering first
     if (filter === "Completed") {
       filtered = filtered.filter((t) => t.completed);
     } else if (filter === "Incomplete") {
       filtered = filtered.filter((t) => !t.completed);
     }
 
+    // Sort by: Priority → Due Date → Duration
     return filtered.sort((a, b) => {
+      // Compare priority
       const prioA = priorityMap[a.priority] || 4;
       const prioB = priorityMap[b.priority] || 4;
+      if (prioA !== prioB) return prioA - prioB;
+
+      // If priority is same, compare due date
+      const dateA = new Date(a.dueDate || "9999-12-31");
+      const dateB = new Date(b.dueDate || "9999-12-31");
+      if (dateA < dateB) return -1;
+      if (dateA > dateB) return 1;
+
+      // If priority and date are same, compare duration
       const durA = parseInt(a.duration || "0", 10);
       const durB = parseInt(b.duration || "0", 10);
-
-      if (prioA !== prioB) return prioA - prioB;
       return durA - durB;
     });
   }, [tasks, filter]);
@@ -78,7 +87,7 @@ const App = () => {
   return (
     <div className="app-wrapper">
       <div className="header">
-        <h1>Andey's Task Manager</h1>
+        <h1>Task Manager</h1>
         <button
           className="add-btn"
           onClick={() => {
